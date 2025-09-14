@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: ${MYSQL_IMAGE}
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "${MYSQL_HOST_PORT}:${MYSQL_CONTAINER_PORT}"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - blog_network
+
+  redis:
+    image: ${REDIS_IMAGE}
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_HOST_PORT}:${REDIS_CONTAINER_PORT}"
+    volumes:
+      - ./redis/data:/data
+    command: >
+      --requirepass ${REDIS_PASSWORD}
+      --stop-writes-on-bgsave-error no
+      --dir /data
+    networks:
+      - blog_network
+
+networks:
+  blog_network:
+    driver: bridge
